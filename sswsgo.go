@@ -576,11 +576,11 @@ func main() {
 		return
 	}
 
-	//herokuport := os.Getenv("PORT") //only for heroku
+	herokuport := os.Getenv("PORT") //only for heroku
 
 	if *s {
-		myserver(*sport)
-		//myserver(herokuport) //only for heroku
+		//myserver(*sport)
+		myserver(herokuport) //only for heroku
 
 	} else {
 
