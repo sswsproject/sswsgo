@@ -145,16 +145,16 @@ func ping(ws *websocket.Conn, done chan struct{}) {
 }
 
 func Closefile(f *os.File) {
-  f.WriteString("]")
-  f.Close()
+	f.WriteString("]")
+	f.Close()
 }
 
 func sswsgo(w http.ResponseWriter, r *http.Request) {
 
 	var mu sync.Mutex
-  var wg sync.WaitGroup
-  
-  wg.Add(2)
+	var wg sync.WaitGroup
+
+	wg.Add(2)
 
 	var wqueue *DataQ
 	wqueue = new(DataQ)
@@ -167,7 +167,7 @@ func sswsgo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-  connclient := "[" + c.UnderlyingConn().RemoteAddr().String() + "]"
+	connclient := "[" + c.UnderlyingConn().RemoteAddr().String() + "]"
 
 	stdoutDone := make(chan struct{})
 	go ping(c, stdoutDone)
@@ -183,10 +183,10 @@ func sswsgo(w http.ResponseWriter, r *http.Request) {
 		_, ciphertext, err := c.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Printf(connclient ,"error: %v, user-agent: %v", err, r.Header.Get("User-Agent"))
+				log.Printf(connclient, "error: %v, user-agent: %v", err, r.Header.Get("User-Agent"))
 				return
 			} else {
-				log.Println(connclient ,"read err 189:", err)
+				log.Println(connclient, "read err 189:", err)
 			}
 
 			mu.Lock()
@@ -222,13 +222,13 @@ func sswsgo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			remotefull := remotehost + ":" + strconv.Itoa(remoteport)
-			log.Println(connclient ,"connect: ", remotefull)
+			log.Println(connclient, "connect: ", remotefull)
 
 			conn, err = net.Dial("tcp", remotefull)
 			defer conn.Close()
 			if err != nil {
 				// handle error
-				log.Println(connclient ,"remote unreachable 231: ", err)
+				log.Println(connclient, "remote unreachable 231: ", err)
 				return
 			}
 			conn.SetDeadline(time.Now().Add(10 * time.Minute)) // set 10 minutes timeout
@@ -241,10 +241,10 @@ func sswsgo(w http.ResponseWriter, r *http.Request) {
 					data := make([]byte, 4096)
 
 					read_len, err := conn.Read(data)
-					
+
 					if err != nil {
 						if err != io.EOF {
-							log.Println(connclient ,"remote read err 247: ", err)
+							log.Println(connclient, "remote read err 247: ", err)
 							break
 						} else {
 							if read_len == 0 {
@@ -256,20 +256,20 @@ func sswsgo(w http.ResponseWriter, r *http.Request) {
 					if read_len > 0 {
 
 						ciphertext = Myencrypt(data[:read_len], keystr)
-						
+
 						err = c.WriteMessage(websocket.BinaryMessage, ciphertext)
 						if err != nil {
-							log.Println(connclient ,"websocket write err 262: ", err)
+							log.Println(connclient, "websocket write err 262: ", err)
 							break
 						}
 					}
 				}
-				
+
 				ciphertext = Myencrypt([]byte("*** error or close ***"), keystr)
-				
+
 				err = c.WriteMessage(websocket.BinaryMessage, ciphertext)
 				if err != nil {
-				  log.Println(connclient ,"websocket write err 272: ", err)
+					log.Println(connclient, "websocket write err 272: ", err)
 				}
 			}()
 
@@ -335,9 +335,9 @@ func handleClient(conn net.Conn, urlstr string, sport string) {
 	conn.SetDeadline(time.Now().Add(10 * time.Minute)) // set 10 minutes timeout
 
 	var mu sync.Mutex
-  var wg sync.WaitGroup
-  
-  wg.Add(2)
+	var wg sync.WaitGroup
+
+	wg.Add(2)
 
 	var wqueue *DataQ
 	wqueue = new(DataQ)
@@ -447,7 +447,7 @@ func handleClient(conn net.Conn, urlstr string, sport string) {
 			log.Println(nowstr(), idintotal, atomic.LoadUint64(&concurrent), "write err 447:", err)
 			return
 		}
-		
+
 		go func() {
 
 			defer wg.Done()
@@ -464,49 +464,49 @@ func handleClient(conn net.Conn, urlstr string, sport string) {
 				}
 
 				plaintext := Mydecrypt(ciphertext, keystr)
-				
+
 				if len(plaintext) != 0 {
 					mu.Lock()
 					wqueue.dq.PushBack(plaintext)
 					mu.Unlock()
 				}
 			}
-			
+
 		}()
 
 		go func() {
 
 			defer wg.Done()
 			for {
-				
+
 				if wqueue.dq.Len() > 0 {
 
 					mu.Lock()
 
 					first := wqueue.dq.Front()
 					dataforwrite := first.Value.([]byte)
-					
+
 					if len(dataforwrite) == len([]byte("*** error or close ***")) {
 						if string(dataforwrite) == "*** error or close ***" {
-						  conn.Close()   // maybe we should add a chan to indicate the conn should be close then close the conn
+							conn.Close() // maybe we should add a chan to indicate the conn should be close then close the conn
 							break
 						}
 					}
-					
+
 					conn.Write(dataforwrite)
 					wqueue.dq.Remove(first)
 					mu.Unlock()
 
 				} else {
-					
+
 					time.Sleep(time.Second)
 				}
 			}
 		}()
 
 		for {
-		
-		  // we should recieve a close conn chan here..
+
+			// we should recieve a close conn chan here..
 
 			data := make([]byte, 4096)
 
@@ -514,7 +514,7 @@ func handleClient(conn net.Conn, urlstr string, sport string) {
 
 			if err != nil {
 				if err != io.EOF {
-				  
+
 					log.Println(nowstr(), idintotal, atomic.LoadUint64(&concurrent), "local read err 518:", err)
 					break
 				} else {
@@ -537,7 +537,7 @@ func handleClient(conn net.Conn, urlstr string, sport string) {
 
 		}
 	}
-	
+
 	wg.Wait()
 }
 
