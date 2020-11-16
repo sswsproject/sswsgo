@@ -469,7 +469,7 @@ func handleClient(conn net.Conn, urlstr string, sport string, tolog bool, wss bo
 		u := url.URL{Scheme: "ws", Host: fullurl, Path: "ws"}
 
 		if wss {
-			u := url.URL{Scheme: "wss", Host: fullurl, Path: "ws"}
+			u = url.URL{Scheme: "wss", Host: fullurl, Path: "ws"}
 		}
 	
 		c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
