@@ -692,7 +692,7 @@ func checkError(err error) {
 	}
 }
 
-func myclient(proxystr string, hostname string, port string, urlstr string, sport string, tolog bool) {
+func myclient(proxystr string, hostname string, port string, urlstr string, sport string, tolog bool, wss bool) {
 
 	service := hostname + ":" + port
 	log.Println("This is a client(or local server) at " + service)
@@ -711,7 +711,7 @@ func myclient(proxystr string, hostname string, port string, urlstr string, spor
 		if err != nil {
 			continue
 		}
-		go handleClient(conn, urlstr, sport, tolog)
+		go handleClient(conn, urlstr, sport, tolog, wss)
 	}
 }
 
