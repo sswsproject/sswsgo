@@ -1,4 +1,4 @@
-module github.com/bigbagboom/sswsgo
+module github.com/sswsproject/sswsgo
 
 go 1.15
 
